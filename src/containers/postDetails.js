@@ -1,0 +1,54 @@
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
+
+//get the actions
+import {getPostsById, deletePost, votePost} from '../actions/posts'
+import {getCommentsOfPost, createComment, editComment,voteComment, deleteComment} from '../actions/comments'
+
+//get the components
+import PostDetails from '../components/postDetails'
+import Loader from '../components/loader'
+
+class PostDetailsContainer extends Component {
+  componentDidMount() {
+    const {id} = this.props.match.params
+    this.props.getPost(id)
+      .then(res => {
+        this.props.getCommentsOfPost(id)
+      })
+      .catch(e => {
+        console.log('in cmm ', e)
+      })
+  }
+
+
+  render() {
+    let shouldLoad = this.props.post.post && this.props.post.comments
+    return shouldLoad ?<PostDetails
+      {...this.props}
+    /> : <Loader/>
+  }
+}
+
+const mapStateToProps = (store,ownProps) => {
+  return {
+    post: store.post
+  }
+
+}
+
+const mapDispatchToProps = (dispatch,ownProps) => {
+  return {
+    getPost: (id) => dispatch(getPostsById(id)),
+    deletePost: (id) => dispatch(deletePost(id)),
+    clearPost: () => dispatch({type:'CLEAR_POST'}),
+    getCommentsOfPost: id => dispatch(getCommentsOfPost(id)),
+    publishComment: data => dispatch(createComment(data)),
+    editComment: (commentId, data) => dispatch(editComment(commentId,data)),
+    deleteComment: (id) => dispatch(deleteComment(id)),
+    votePost: (postId,vote) => dispatch(votePost(postId, vote)),
+    voteComment: (commentId, vote) => dispatch(voteComment(commentId,vote))
+  }
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(PostDetailsContainer);
